@@ -52,7 +52,7 @@ function willTransition() {
 }
 
 function didTransition() {
-	const routerMicrolib = this._routerMicrolib;
+	const routerMicrolib = this.router || this._routerMicrolib;
 	const onEnterChains = routerMicrolib.state.handlerInfos
 		.filter((info) => !routerMicrolib.oldState.handlerInfos.includes(info))
 		.map((info) => [info.handler, 'onEnter']);
