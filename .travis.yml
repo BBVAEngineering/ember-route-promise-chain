@@ -1,11 +1,12 @@
 ---
 language: node_js
 node_js:
-  # we recommend testing addons with the same minimum supported node version as Ember CLI
-  # so that your addon works for all apps
   - "4"
 
 sudo: false
+
+addons:
+  chrome: stable
 
 cache:
   directories:
@@ -27,11 +28,12 @@ matrix:
     - env: EMBER_TRY_SCENARIO=ember-canary
 
 before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
   - npm config set spin false
-  - npm install -g npm@4
+  - npm install -g npm@5
   - npm --version
-  - npm install -g phantomjs-prebuilt
-  - phantomjs --version
+  - google-chrome --version
 
 install:
   - npm install

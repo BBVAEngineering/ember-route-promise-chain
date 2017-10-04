@@ -1,0 +1,18 @@
+
+digraph {
+  node [shape="record"];
+  edge [fontsize="10.0"];
+
+  A [label="Parent A"];
+  AA [label="Child A.A"];
+  B [label="Parent B"]
+  BA [label="Child B.A"]
+
+  A -> AA [minlen="2"];
+  B -> BA [minlen="2"];
+
+  AA -> BA [label="transitionTo", style="dashed", headlabel=" onEnter() ", taillabel=" onExit() ", minlen="4"];
+
+  {rank=same; A B};
+  {rank=same; AA BA};
+}
