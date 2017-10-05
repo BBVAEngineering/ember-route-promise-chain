@@ -27,15 +27,11 @@ In order to define a new hook, you can setup your routes as follows:
 export default Ember.Route.extend({
 
   onEnter() {
-    return [{
-      promise: new Promise(resolve => resolve())
-    }];
+    return [new Promise(resolve => resolve())];
   },
 
   onExit() {
-    return [{
-      promise: new Promise(resolve => resolve())
-    }];
+    return [new Promise(resolve => resolve())];
   }
 
 });
@@ -58,19 +54,19 @@ export default Ember.Route.extend({
 });
 ```
 
-On nested routes, hooks are executed in order `parent-child`. So, for example, in the next figure,
+On nested routes, `onExit` hooks are executed in `child-parent` order whilst `onEnter` hooks are executed in `parent-child` order. So, for example, in the next figure,
 
 ![Example 2](dots/example_2.png)
 
 hooks, are executed as follows:
 
-* onExit: Parent A -> Child A.A.
+* onExit: Child A.A -> Parent A.
 * onEnter: Parent B -> Child B.A.
 
 Or, as follows:
 
-* First, Parent A, onExit method.
-* Next, Child A.A, onExit method.
+* First, Child A.A, onExit method.
+* Next, Parent A, onExit method.
 * Next, Parent B, onEnter method.
 * Last, Child B.A, onEnter method.
 
@@ -98,6 +94,38 @@ export default Ember.Route.extend({
 When a chain (`condition` or `promise` properties) returns a rejection, next chains on same hierarchy are not executed.
 
 When a chain triggers a transition to another route, next chains on all hierarchies are not executed.
+
+Extending routes can be handy to define some behaviour in order to set promise chains dependencies. On the next example, `my-promise` chain will only execute if `promise-base` chain is not going to be executed.
+
+```javascript
+// File: base.js
+export default Ember.Route.extend({
+
+    async onEnter() {
+      return [{
+        name: 'promise-base',
+        condition: () => this.get('shouldFetch'),
+        promise: () => this.fetch()
+      }];
+    }
+
+});
+
+// File: my-route.js
+export default BaseRoute.extend({
+
+    async onEnter() {
+      const chains = await this._super();
+
+      return [{
+        name: 'my-promise',
+        condition: () => !chains[0].condition(),
+        promise: () => this.myFetch()
+      }].concat(chains);
+    }
+
+});
+```
 
 ## Installation
 

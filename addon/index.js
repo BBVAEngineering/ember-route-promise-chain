@@ -5,38 +5,43 @@ const RUNNING = Symbol('running');
 const IDLE = Symbol('idle');
 let state = IDLE;
 
-async function runConditional(context, conditional) {
+async function runChain(context, chain) {
 	let ret = true;
 
-	if (conditional.condition) {
-		ret = await conditional.condition.apply(context);
+	if (typeof chain === 'function') {
+		await chain.apply(context);
+		return;
+	}
+
+	if (chain.condition) {
+		ret = await chain.condition.apply(context);
 	}
 
 	if (ret) {
-		await conditional.promise.apply(context);
+		await chain.promise.apply(context);
 	}
 }
 
-async function runChain([context, method]) {
-	const conditionals = await context[method]();
+async function runHook([context, method]) {
+	const chains = await context[method]();
 
-	if (!isArray(conditionals)) {
+	if (!isArray(chains)) {
 		throw new Error(`Hook ${method} must return an array`);
 	}
 
-	for (let i = 0; i < conditionals.length && state === RUNNING; i++) {
-		const conditional = conditionals[i];
-
-		await runConditional(context, conditional);
-	}
-}
-
-async function runChains(chains) {
 	for (let i = 0; i < chains.length && state === RUNNING; i++) {
 		const chain = chains[i];
 
+		await runChain(context, chain);
+	}
+}
+
+async function runHooks(hooks) {
+	for (let i = 0; i < hooks.length && state === RUNNING; i++) {
+		const hook = hooks[i];
+
 		try {
-			await runChain(chain);
+			await runHook(hook);
 		} catch (e) {
 			if (e && Ember.onerror) {
 				Ember.onerror(e);
@@ -52,21 +57,20 @@ function willTransition() {
 }
 
 function didTransition() {
-	const routerMicrolib = this.router || this._routerMicrolib;
-	const onEnterChains = routerMicrolib.state.handlerInfos
+	const routerMicrolib = this._routerMicrolib || this.router;
+	const onEnterHooks = routerMicrolib.state.handlerInfos
 		.filter((info) => !routerMicrolib.oldState.handlerInfos.includes(info))
 		.map((info) => [info.handler, 'onEnter']);
-	const onExitChains = routerMicrolib.oldState.handlerInfos
+	const onExitHooks = routerMicrolib.oldState.handlerInfos
 		.filter((info) => !routerMicrolib.state.handlerInfos.includes(info))
-		.map((info) => [info.handler, 'onExit']);
-	const chains = []
-		.concat(onExitChains)
-		.concat(onEnterChains)
+		.map((info) => [info.handler, 'onExit'])
+		.reverse();
+	const hooks = [...onExitHooks, ...onEnterHooks]
 		.filter(([context, method]) => context && context[method]);
 
 	state = RUNNING;
 
-	runChains(chains);
+	runHooks(hooks);
 }
 
 /**
