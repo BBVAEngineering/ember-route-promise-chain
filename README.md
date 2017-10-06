@@ -6,6 +6,12 @@ A tiny ember-cli addon to enable promise-based hooks upon entering or exiting ro
 
 ## Usage
 
+Install the addon with ember-cli.
+
+```javascript
+ember install ember-route-promise-chain
+```
+
 Create a new [instance-initializer](https://guides.emberjs.com/v2.14.0/applications/initializers/) and inject the addon.
 
 ```javascript
@@ -37,9 +43,11 @@ export default Ember.Route.extend({
 });
 ```
 
+Both hooks are executed when the transition finishes. On leaving routes, `onExit` hooks are executed, and on entering routes `onEnter` hooks are executed.
+
 ![Example 1](dots/example_1.png)
 
-Also, you can setup conditions for you hook to execute. Every condition is evaluated just before `promise` is executed.
+Also, you can setup conditions for your hook to execute. Every condition is evaluated just before `promise` is executed, if the condition returns `false`, `promise` won't be executed.
 
 ```javascript
 export default Ember.Route.extend({
@@ -79,7 +87,7 @@ export default Ember.Route.extend({
 
   async onEnter() {
     return [{
-      condition: () => this.get('fetched'),
+      condition: () => !this.get('fetched'),
       promise: async () => {
         const response = await this.fetch();
 
