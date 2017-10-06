@@ -1,0 +1,213 @@
+import sinon from 'sinon';
+import Ember from 'ember';
+import { test } from 'ember-qunit';
+import moduleForAcceptance from '../helpers/module-for-acceptance';
+import injectPromiseChain from 'ember-route-promise-chain';
+
+const { Route } = Ember;
+const { RSVP: { resolve, reject } } = Ember;
+
+moduleForAcceptance('Acceptance | route-promise-chain | chains', {
+	beforeEach() {
+		this.sandbox = sinon.sandbox.create();
+		this.appInstance = this.application.__container__.owner;
+		this.service = this.appInstance.lookup('service:promise-chain');
+
+		this.appInstance.register('route:A', Route.extend());
+		this.appInstance.register('route:B', Route.extend());
+		this.appInstance.register('route:A.A', Route.extend());
+
+		injectPromiseChain(this.appInstance);
+
+		return visit('/');
+	}
+});
+
+test('it executes chain on "onEnter" hook', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+
+	assert.ok(chain.calledOnce, 'chain is called');
+});
+
+test('it executes chain on "onExit" hook', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = sinon.spy();
+
+	await visit('/A');
+
+	routeA.onExit = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/B');
+
+	assert.ok(chain.calledOnce, 'chain is called');
+});
+
+test('it executes chain when condition is truthy', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = {
+		condition: () => true,
+		promise: sinon.spy()
+	};
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+
+	assert.ok(chain.promise.calledOnce, 'chain is called');
+});
+
+test('it executes chain when condition is falsy', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = {
+		condition: () => false,
+		promise: sinon.spy()
+	};
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+
+	assert.ok(chain.promise.notCalled, 'chain is not called');
+});
+
+test('it executes all chains in order', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain1 = sinon.spy();
+	const chain2 = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain1, chain2]));
+
+	await visit('/A');
+
+	assert.ok(chain1.calledBefore(chain2), 'chain is called before');
+});
+
+test('it stop execution when a chain breaks', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain1 = () => reject();
+	const chain2 = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain1, chain2]));
+
+	await visit('/A');
+
+	assert.ok(chain2.notCalled, 'chain is not called');
+});
+
+test('it does not stop execution when a nested chain breaks', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const routeAA = this.appInstance.lookup('route:A.A');
+	const chain1 = () => reject();
+	const chain2 = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain1]));
+	routeAA.onEnter = this.sandbox.stub().returns(resolve([chain2]));
+
+	await visit('/A/A');
+
+	assert.ok(chain2.calledOnce, 'chain is called');
+});
+
+test('it calls default onerror when a chain breaks', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const error = new Error('foo');
+	const chain = () => reject(error);
+
+	Ember.onerror = this.sandbox.stub();
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+
+	assert.ok(Ember.onerror.calledWith(error), 'onerror is called');
+});
+
+test('it calls default onerror when a hook breaks', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const error = new Error('foo');
+
+	Ember.onerror = this.sandbox.stub();
+	routeA.onEnter = this.sandbox.stub().throws(error);
+
+	await visit('/A');
+
+	assert.ok(Ember.onerror.calledWith(error), 'onerror is called');
+});
+
+test('it stops chains when new transition occurs', async function(assert) {
+	const router = this.appInstance.lookup('router:main');
+	const routeA = this.appInstance.lookup('route:A');
+	const chain1 = () => router.transitionTo('B');
+	const chain2 = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain1, chain2]));
+
+	await visit('/A');
+
+	assert.ok(chain2.notCalled, 'chain is not called');
+});
+
+test('it stops nested chains when new transition occurs', async function(assert) {
+	const router = this.appInstance.lookup('router:main');
+	const routeA = this.appInstance.lookup('route:A');
+	const routeAA = this.appInstance.lookup('route:A.A');
+	const chain1 = () => router.transitionTo('B');
+	const chain2 = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain1]));
+	routeAA.onEnter = this.sandbox.stub().returns(resolve([chain2]));
+
+	await visit('/A/A');
+
+	assert.ok(chain2.notCalled, 'chain is not called');
+});
+
+test('it supports async hooks', async function(assert) {
+	assert.expect(1);
+
+	const routeA = this.appInstance.lookup('route:A');
+
+	routeA.onEnter = async () => assert.ok(true, 'hook is called');
+
+	await visit('/A');
+});
+
+test('it supports async chains', async function(assert) {
+	assert.expect(1);
+
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = async () => assert.ok(true, 'chain is called');
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+});
+
+test('it supports async chains with conditions', async function(assert) {
+	assert.expect(1);
+
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = {
+		condition: async () => true,
+		promise: async () => assert.ok(true, 'chain is called')
+	};
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A');
+});
+
+test('it throws an error when hook does not return an array', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+
+	Ember.onerror = this.sandbox.stub();
+	routeA.onEnter = resolve({ foo: 'bar' });
+
+	await visit('/A');
+
+	assert.ok(Ember.onerror.calledWithMatch(Error), 'onerror is called');
+});
