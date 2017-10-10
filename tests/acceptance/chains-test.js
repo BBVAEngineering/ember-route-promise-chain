@@ -15,6 +15,7 @@ moduleForAcceptance('Acceptance | route-promise-chain | chains', {
 
 		this.appInstance.register('route:A', Route.extend());
 		this.appInstance.register('route:B', Route.extend());
+		this.appInstance.register('route:C', Route.extend());
 		this.appInstance.register('route:A.A', Route.extend());
 
 		injectPromiseChain(this.appInstance);
@@ -211,3 +212,47 @@ test('it throws an error when hook does not return an array', async function(ass
 
 	assert.ok(Ember.onerror.calledWithMatch(Error), 'onerror is called');
 });
+
+test('it chains "onExit" hooks when a trasition occurs before chain resolution', async function(assert) {
+	const router = this.appInstance.lookup('router:main');
+	const routeA = this.appInstance.lookup('route:A');
+	const routeB = this.appInstance.lookup('route:B');
+	const routeC = this.appInstance.lookup('route:C');
+	const chain1 = sinon.spy();
+	const chain2 = sinon.spy();
+	const chain3 = sinon.spy();
+
+	await visit('/A');
+
+	routeB.beforeModel = () => router.transitionTo('C');
+	routeA.onExit = this.sandbox.stub().returns(resolve([chain1]));
+	routeB.onEnter = this.sandbox.stub().returns(resolve([chain2]));
+	routeC.onEnter = this.sandbox.stub().returns(resolve([chain3]));
+
+	await visit('/B');
+
+	assert.ok(chain1.calledOnce, 'chain is called');
+	assert.ok(chain2.notCalled, 'chain is not called');
+	assert.ok(chain3.calledOnce, 'chain is called');
+});
+
+test('it does not executes hooks on transition abort', async function(assert) {
+	const router = this.appInstance.lookup('router:main');
+	const routerMicrolib = router._routerMicrolib || router.router;
+	const routeA = this.appInstance.lookup('route:A');
+	const routeB = this.appInstance.lookup('route:B');
+	const chain1 = sinon.spy();
+	const chain2 = sinon.spy();
+
+	await visit('/A');
+
+	routeB.beforeModel = () => routerMicrolib.activeTransition.abort();
+	routeA.onExit = this.sandbox.stub().returns(resolve([chain1]));
+	routeB.onEnter = this.sandbox.stub().returns(resolve([chain2]));
+
+	await visit('/B');
+
+	assert.ok(chain1.notCalled, 'chain is not called');
+	assert.ok(chain2.notCalled, 'chain is not called');
+});
+

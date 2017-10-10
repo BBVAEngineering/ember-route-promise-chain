@@ -17,6 +17,10 @@ Router.map(function() {
 	this.route('B', function() {
 		this.route('A');
 	});
+
+	this.route('C');
+
+	this.mount('engine', { as: 'E' });
 });
 
 export default Router;

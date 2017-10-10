@@ -3,6 +3,7 @@ import Ember from 'ember';
 const { isArray } = Ember;
 const RUNNING = Symbol('running');
 const IDLE = Symbol('idle');
+let onExitHandlers;
 let state = IDLE;
 
 async function runChain(context, chain) {
@@ -53,18 +54,22 @@ async function runHooks(hooks) {
 }
 
 function willTransition() {
+	const routerMicrolib = this._routerMicrolib || this.router;
+
+	onExitHandlers = routerMicrolib.state.handlerInfos;
+
 	state = IDLE;
 }
 
 function didTransition() {
 	const routerMicrolib = this._routerMicrolib || this.router;
-	const onEnterHooks = routerMicrolib.state.handlerInfos
-		.filter((info) => !routerMicrolib.oldState.handlerInfos.includes(info))
-		.map((info) => [info.handler, 'onEnter']);
-	const onExitHooks = routerMicrolib.oldState.handlerInfos
+	const onExitHooks = onExitHandlers
 		.filter((info) => !routerMicrolib.state.handlerInfos.includes(info))
 		.map((info) => [info.handler, 'onExit'])
 		.reverse();
+	const onEnterHooks = routerMicrolib.state.handlerInfos
+		.filter((info) => !onExitHandlers.includes(info))
+		.map((info) => [info.handler, 'onEnter']);
 	const hooks = [...onExitHooks, ...onEnterHooks]
 		.filter(([context, method]) => context && context[method]);
 

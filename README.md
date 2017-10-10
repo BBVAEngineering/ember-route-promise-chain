@@ -22,8 +22,8 @@ export function initialize(appInstance) {
 }
 
 export default {
-	name: 'route-promise-chain',
-	initialize
+  name: 'route-promise-chain',
+  initialize
 };
 ```
 

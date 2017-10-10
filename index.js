@@ -2,5 +2,5 @@
 'use strict';
 
 module.exports = {
-  name: 'ember-route-promise-chain'
+	name: 'ember-route-promise-chain'
 };
