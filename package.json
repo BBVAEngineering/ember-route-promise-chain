@@ -1,6 +1,6 @@
 {
   "name": "ember-route-promise-chain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add promise based hooks on routes triggering on every transition by route hierarchy",
   "keywords": [
     "ember-addon"
