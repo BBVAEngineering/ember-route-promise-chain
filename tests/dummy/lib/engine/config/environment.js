@@ -1,10 +1,9 @@
-/*jshint node:true*/
 'use strict';
 
 module.exports = function(environment) {
-	var ENV = {
+	const ENV = {
 		modulePrefix: 'engine',
-		environment: environment
+		environment
 	};
 
 	return ENV;
