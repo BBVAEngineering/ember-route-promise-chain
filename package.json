@@ -44,7 +44,7 @@
     "ember-sinon": "^1.0.1",
     "ember-source": "~2.14.1",
     "engine": "file:./tests/dummy/lib/engine",
-    "eslint": "^4.18.1",
+    "eslint": "^3.0.0",
     "eslint-config-bbva": "^2.0.0",
     "loader.js": "^4.2.3"
   },
