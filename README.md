@@ -1,4 +1,11 @@
-# ember-route-promise-chain [![Build Status](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain) [![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain) [![Dependency Status](https://david-dm.org/BBVAEngineering/ember-route-promise-chain.svg)](https://david-dm.org/BBVAEngineering/ember-route-promise-chain)
+# ember-route-promise-chain 
+
+[![Build Status](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain)
+[![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain)
+[![npm version](https://badge.fury.io/js/ember-route-promise-chain.svg)](https://badge.fury.io/js/ember-route-promise-chain)
+[![Dependency Status](https://david-dm.org/BBVAEngineering/ember-route-promise-chain.svg)](https://david-dm.org/BBVAEngineering/ember-route-promise-chain)
+
+## Information
 
 [![NPM](https://nodei.co/npm/ember-route-promise-chain.png?downloads=true&downloadRank=true)](https://nodei.co/npm/ember-route-promise-chain/)
 
@@ -135,20 +142,19 @@ export default BaseRoute.extend({
 });
 ```
 
-## Installation
+## Contribute
 
-* `git clone <repository-url>` this repository
-* `cd ember-route-promise-chain`
-* `npm install`
+If you want to contribute to this addon, please read the [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Running Tests
+## Versioning
 
-* `npm test` (Runs `ember try:each` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/BBVAEngineering/ember-route-promise-chain/tags).
 
-## Building
 
-* `ember build`
+## Authors
 
-For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).
+See the list of [contributors](https://github.com/BBVAEngineering/ember-route-promise-chain/graphs/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
