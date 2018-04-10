@@ -31,11 +31,11 @@ matrix:
 
 before_install:
   - npm config set spin false
-  - npm install -g npm@5
+  - npm install -g npm@^5.7
   - npm --version
 
 install:
-  - npm install
+  - npm ci
 
 before_script:
   - sudo chown root /opt/google/chrome/chrome-sandbox
