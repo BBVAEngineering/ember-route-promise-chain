@@ -1,9 +1,10 @@
 ---
 language: node_js
 node_js:
-  - "4"
+  - "stable"
 
 sudo: false
+dist: trusty
 
 addons:
   chrome: stable
@@ -11,11 +12,13 @@ addons:
 cache:
   directories:
     - $HOME/.npm
+    - $HOME/.cache  # includes bowers cache
 
 env:
   # we recommend new addons test the current and previous LTS
   # as well as latest stable release (bonus points to beta/canary)
   - EMBER_TRY_SCENARIO=ember-lts-2.12
+  - EMBER_TRY_SCENARIO=ember-lts-2.16
   - EMBER_TRY_SCENARIO=ember-release
   - EMBER_TRY_SCENARIO=ember-beta
   - EMBER_TRY_SCENARIO=ember-canary
@@ -27,15 +30,16 @@ matrix:
     - env: EMBER_TRY_SCENARIO=ember-canary
 
 before_install:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
   - npm config set spin false
   - npm install -g npm@5
   - npm --version
-  - google-chrome --version
 
 install:
   - npm install
+
+before_script:
+  - sudo chown root /opt/google/chrome/chrome-sandbox
+  - sudo chmod 4755 /opt/google/chrome/chrome-sandbox
 
 script:
   # Usually, it's ok to finish the test scenario without reverting
