@@ -21,6 +21,10 @@ moduleForAcceptance('Acceptance | route-promise-chain | chains', {
 		injectPromiseChain(this.appInstance);
 
 		return visit('/');
+	},
+
+	afterEach() {
+		Ember.onerror = null;
 	}
 });
 
