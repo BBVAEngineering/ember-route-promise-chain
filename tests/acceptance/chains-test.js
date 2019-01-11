@@ -260,3 +260,14 @@ test('it does not executes hooks on transition abort', async function(assert) {
 	assert.ok(chain2.notCalled, 'chain is not called');
 });
 
+test('it does not execute chain on transition to same route', async function(assert) {
+	const routeA = this.appInstance.lookup('route:A');
+	const chain = sinon.spy();
+
+	routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+	await visit('/A?foo=foo');
+	await visit('/A?foo=bar');
+
+	assert.ok(chain.calledOnce, 'chain is called only once');
+});
