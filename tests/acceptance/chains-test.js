@@ -52,6 +52,19 @@ module('Acceptance | route-promise-chain | chains', (hooks) => {
 		assert.ok(chain.calledOnce, 'chain is called');
 	});
 
+	test('it executes chain when promise is present', async function(assert) {
+		const routeA = this.owner.lookup('route:a');
+		const chain = {
+			promise: sinon.spy()
+		};
+
+		routeA.onEnter = this.sandbox.stub().returns(resolve([chain]));
+
+		await visit('/a');
+
+		assert.ok(chain.promise.calledOnce, 'chain is called');
+	});
+
 	test('it executes chain when condition is truthy', async function(assert) {
 		const routeA = this.owner.lookup('route:a');
 		const chain = {
