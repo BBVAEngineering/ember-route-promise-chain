@@ -269,8 +269,8 @@ module('Acceptance | route-promise-chain | chains', (hooks) => {
 
 		try {
 			await visit('/b');
-		} catch(e) {
-			// foo
+		} catch (e) {
+			// branch
 		}
 
 		assert.ok(chain1.notCalled, 'chain is not called');

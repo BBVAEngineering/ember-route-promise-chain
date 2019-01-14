@@ -4,7 +4,7 @@ import { get } from '@ember/object';
 
 const RUNNING = Symbol('running');
 const IDLE = Symbol('idle');
-let onExitHandlers;
+let currentHandlerInfos;
 let state = IDLE;
 
 async function runChain(context, chain) {
@@ -54,42 +54,54 @@ async function runHooks(hooks) {
 	state = IDLE;
 }
 
-function willTransition(transition) {
-	// const routerMicrolib = this._routerMicrolib || this.router;
+function willTransition() {
+	const router = this._routerMicrolib || this.router;
 
-	// onExitHandlers = routerMicrolib.state.handlerInfos;
-
-	onExitHandlers = transition.router.state.routeInfos;
-
-	state = IDLE;
+	currentHandlerInfos = router.state.handlerInfos;
 }
 
-async function didTransition(transition) {
-	if (get(transition, 'from.name') === get(transition, 'to.name')) {
-		return;
-	}
-
-	// const routerMicrolib = this._routerMicrolib || this.router;
-	const onExitHooks = onExitHandlers
-		.filter((info) => !transition.routeInfos.includes(info))
-		.map((info) => [info._route, 'onExit'])
+async function didTransition() {
+	const router = this._routerMicrolib || this.router;
+	const targetHandlerInfos = router.state.handlerInfos;
+	const onExitHooks = currentHandlerInfos
+		.filter((info) => !targetHandlerInfos.includes(info))
+		.map((info) => [info.handler, 'onExit'])
 		.reverse();
-	const onEnterHooks = transition.routeInfos
-		.filter((info) => !onExitHandlers.includes(info))
-		.map((info) => [info._route, 'onEnter']);
+	const onEnterHooks = targetHandlerInfos
+		.filter((info) => !currentHandlerInfos.includes(info))
+		.map((info) => [info.handler, 'onEnter']);
 	const hooks = [...onExitHooks, ...onEnterHooks]
 		.filter(([context, method]) => context && context[method]);
 
 	state = RUNNING;
 
 	await runHooks(hooks);
+
+	// This fixes running hooks on navigation to the same route.
+	currentHandlerInfos = targetHandlerInfos;
 }
 
-function hasNewRouterEvents() {
+function routeDidChange(transition) {
+	if (get(transition, 'from.name') === get(transition, 'to.name')) {
+		return;
+	}
 
+	const currentRouteInfos = transition.router.oldState.routeInfos;
+	const targetRouteInfos = transition.router.state.routeInfos;
+	const onExitHooks = currentRouteInfos
+		.filter((info) => !targetRouteInfos.includes(info))
+		.map((info) => [info._route, 'onExit'])
+		.reverse();
+	const onEnterHooks = targetRouteInfos
+		.filter((info) => !currentRouteInfos.includes(info))
+		.map((info) => [info._route, 'onEnter']);
+	const hooks = [...onExitHooks, ...onEnterHooks]
+		.filter(([context, method]) => context && context[method]);
+
+	state = RUNNING;
+
+	runHooks(hooks);
 }
-
-const HAS_NEW_ROUTER_EVENTS = hasNewRouterEvents();
 
 /**
  * Intercept router hooks "willTransition" and "didTransition" to generate functionality.
@@ -98,9 +110,16 @@ const HAS_NEW_ROUTER_EVENTS = hasNewRouterEvents();
  * @param {Ember.Application} appInstance
  */
 export default function injectPromiseChain(appInstance) {
-	const router = appInstance.lookup('service:router');
+	let router = appInstance.lookup('service:router');
 
-	router.on('routeWillChange', willTransition);
-	router.on('routeDidChange', didTransition);
+	if (router && router.on) {
+		router.on('routeDidChange', routeDidChange);
+		return;
+	}
+
+	router = appInstance.lookup('router:main');
+
+	router.on('willTransition', willTransition);
+	router.on('didTransition', didTransition);
 }
 
