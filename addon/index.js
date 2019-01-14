@@ -61,7 +61,7 @@ function willTransition() {
 	state = IDLE;
 }
 
-function didTransition() {
+async function didTransition() {
 	const routerMicrolib = this._routerMicrolib || this.router;
 	const onExitHooks = onExitHandlers
 		.filter((info) => !routerMicrolib.state.handlerInfos.includes(info))
@@ -75,7 +75,9 @@ function didTransition() {
 
 	state = RUNNING;
 
-	runHooks(hooks);
+	await runHooks(hooks);
+
+	onExitHandlers = routerMicrolib.state.handlerInfos;
 }
 
 /**
