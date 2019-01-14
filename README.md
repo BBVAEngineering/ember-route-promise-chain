@@ -2,8 +2,11 @@
 
 [![Build Status](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain)
 [![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain)
-[![npm version](https://badge.fury.io/js/ember-route-promise-chain.svg)](https://badge.fury.io/js/ember-route-promise-chain)
+[![NPM version](https://badge.fury.io/js/ember-route-promise-chain.svg)](https://badge.fury.io/js/ember-route-promise-chain)
 [![Dependency Status](https://david-dm.org/BBVAEngineering/ember-route-promise-chain.svg)](https://david-dm.org/BBVAEngineering/ember-route-promise-chain)
+[![codecov](https://codecov.io/gh/BBVAEngineering/ember-route-promise-chain/branch/master/graph/badge.svg)](https://codecov.io/gh/BBVAEngineering/ember-route-promise-chain)
+[![Greenkeeper badge](https://badges.greenkeeper.io/BBVAEngineering/ember-route-promise-chain.svg)](https://greenkeeper.io/)
+[![Ember Observer Score](https://emberobserver.com/badges/ember-route-promise-chain.svg)](https://emberobserver.com/addons/ember-route-promise-chain)
 
 ## Information
 
