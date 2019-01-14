@@ -1,4 +1,4 @@
-# ember-route-promise-chain 
+# ember-route-promise-chain
 
 [![Build Status](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain.svg?branch=master)](https://travis-ci.org/BBVAEngineering/ember-route-promise-chain)
 [![GitHub version](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain.svg)](https://badge.fury.io/gh/BBVAEngineering%2Fember-route-promise-chain)
