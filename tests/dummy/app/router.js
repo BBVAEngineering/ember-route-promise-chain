@@ -7,20 +7,20 @@ const Router = EmberRouter.extend({
 });
 
 Router.map(function() {
-	this.route('A', function() {
-		this.route('A', function() {
-			this.route('A');
+	this.route('a', function() {
+		this.route('a', function() {
+			this.route('a');
 		});
-		this.route('B');
+		this.route('b');
 	});
 
-	this.route('B', function() {
-		this.route('A');
+	this.route('b', function() {
+		this.route('a');
 	});
 
-	this.route('C');
+	this.route('c');
 
-	this.mount('engine', { as: 'E' });
+	this.mount('engine', { as: 'e' });
 });
 
 export default Router;

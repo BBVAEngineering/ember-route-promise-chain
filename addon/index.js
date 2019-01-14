@@ -1,5 +1,6 @@
 import { isArray } from '@ember/array';
 import Ember from 'ember';
+import { get } from '@ember/object';
 
 const RUNNING = Symbol('running');
 const IDLE = Symbol('idle');
@@ -53,32 +54,42 @@ async function runHooks(hooks) {
 	state = IDLE;
 }
 
-function willTransition() {
-	const routerMicrolib = this._routerMicrolib || this.router;
+function willTransition(transition) {
+	// const routerMicrolib = this._routerMicrolib || this.router;
 
-	onExitHandlers = routerMicrolib.state.handlerInfos;
+	// onExitHandlers = routerMicrolib.state.handlerInfos;
+
+	onExitHandlers = transition.router.state.routeInfos;
 
 	state = IDLE;
 }
 
-async function didTransition() {
-	const routerMicrolib = this._routerMicrolib || this.router;
+async function didTransition(transition) {
+	if (get(transition, 'from.name') === get(transition, 'to.name')) {
+		return;
+	}
+
+	// const routerMicrolib = this._routerMicrolib || this.router;
 	const onExitHooks = onExitHandlers
-		.filter((info) => !routerMicrolib.state.handlerInfos.includes(info))
-		.map((info) => [info.handler, 'onExit'])
+		.filter((info) => !transition.routeInfos.includes(info))
+		.map((info) => [info._route, 'onExit'])
 		.reverse();
-	const onEnterHooks = routerMicrolib.state.handlerInfos
+	const onEnterHooks = transition.routeInfos
 		.filter((info) => !onExitHandlers.includes(info))
-		.map((info) => [info.handler, 'onEnter']);
+		.map((info) => [info._route, 'onEnter']);
 	const hooks = [...onExitHooks, ...onEnterHooks]
 		.filter(([context, method]) => context && context[method]);
 
 	state = RUNNING;
 
 	await runHooks(hooks);
-
-	onExitHandlers = routerMicrolib.state.handlerInfos;
 }
+
+function hasNewRouterEvents() {
+
+}
+
+const HAS_NEW_ROUTER_EVENTS = hasNewRouterEvents();
 
 /**
  * Intercept router hooks "willTransition" and "didTransition" to generate functionality.
@@ -87,9 +98,9 @@ async function didTransition() {
  * @param {Ember.Application} appInstance
  */
 export default function injectPromiseChain(appInstance) {
-	const router = appInstance.lookup('router:main');
+	const router = appInstance.lookup('service:router');
 
-	router.on('willTransition', willTransition);
-	router.on('didTransition', didTransition);
+	router.on('routeWillChange', willTransition);
+	router.on('routeDidChange', didTransition);
 }
 
