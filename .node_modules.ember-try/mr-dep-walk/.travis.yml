@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - "4"
+  - "6"
+  - "7"
+
+cache:
+  yarn: true
+  directories:
+    - $HOME/.npm
+
+matrix:
+  fast_finish: true
+
+script:
+  - yarn test
