@@ -1,5 +1,6 @@
 {
     "ignore": [
-        "ember-try"
+        "ember-try",
+        "ember-cli"
     ]
 }
