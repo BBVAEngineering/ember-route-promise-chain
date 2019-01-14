@@ -1,6 +1,6 @@
+import { isArray } from '@ember/array';
 import Ember from 'ember';
 
-const { isArray } = Ember;
 const RUNNING = Symbol('running');
 const IDLE = Symbol('idle');
 let onExitHandlers;
