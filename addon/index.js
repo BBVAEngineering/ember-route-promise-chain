@@ -1,5 +1,5 @@
-import { isArray } from '@ember/array';
 import Ember from 'ember';
+import { isArray } from '@ember/array';
 import { get } from '@ember/object';
 
 const RUNNING = Symbol('running');
@@ -107,11 +107,12 @@ function routeDidChange(transition) {
  * Intercept router hooks "willTransition" and "didTransition" to generate functionality.
  *
  * @method injectPromiseChain
- * @param {Ember.Application} appInstance
+ * @param {Application} appInstance
  */
 export default function injectPromiseChain(appInstance) {
 	let router = appInstance.lookup('service:router');
 
+	// Compatibility with Ember >= 3.6.
 	if (router && router.on) {
 		router.on('routeDidChange', routeDidChange);
 		return;
@@ -119,6 +120,7 @@ export default function injectPromiseChain(appInstance) {
 
 	router = appInstance.lookup('router:main');
 
+	// Compatibility with Ember < 3.6.
 	router.on('willTransition', willTransition);
 	router.on('didTransition', didTransition);
 }
