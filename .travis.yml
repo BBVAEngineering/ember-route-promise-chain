@@ -25,7 +25,6 @@ jobs:
       before_install:
         - npm config set spin false
         - npm install -g npm@6
-        - npm install -g codecov
         - npm install -g greenkeeper-lockfile@1
         - npm install -g @commitlint/travis-cli
         - npm --version
@@ -40,8 +39,6 @@ jobs:
         - npm test
       after_script:
         - greenkeeper-lockfile-upload
-      after_success:
-        - codecov --file=coverage/lcov.info
 
     - stage: "Regression Tests"
       env: EMBER_TRY_SCENARIO=ember-lts-2.18
@@ -62,10 +59,14 @@ jobs:
 before_install:
   - npm config set spin false
   - npm install -g npm@6
+  - npm install -g codecov
   - npm --version
 
 script:
-  - node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
+  - COVERAGE=true node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
+
+after_success:
+  - codecov --file=coverage/lcov.info
 
 stages:
   - "Tests"
