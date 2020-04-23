@@ -43,7 +43,7 @@ module('Acceptance | route-promise-chain | error', (hooks) => {
 
 		await visit('/a');
 
-		assert.ok(chain.notCalled, 'chain is called');
+		assert.ok(chain.notCalled, 'chain not is called');
 	});
 });
 
