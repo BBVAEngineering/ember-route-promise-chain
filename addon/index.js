@@ -54,12 +54,14 @@ async function runHooks(hooks) {
 	state = IDLE;
 }
 
+// istanbul ignore next: regression for ember >= 3.6
 function willTransition() {
 	const router = this._routerMicrolib || this.router;
 
 	currentHandlerInfos = router.state.handlerInfos;
 }
 
+// istanbul ignore next: regression for ember >= 3.6
 async function didTransition() {
 	const router = this._routerMicrolib || this.router;
 	const targetHandlerInfos = router.state.handlerInfos;
@@ -82,7 +84,7 @@ async function didTransition() {
 }
 
 function routeDidChange(transition) {
-	if (get(transition, 'from.name') === get(transition, 'to.name')) {
+	if (get(transition, 'from.name') === get(transition, 'to.name') || transition.isAborted) {
 		return;
 	}
 
@@ -112,16 +114,15 @@ function routeDidChange(transition) {
 export default function injectPromiseChain(appInstance) {
 	let router = appInstance.lookup('service:router');
 
-	// Compatibility with Ember >= 3.6.
-	if (router && router.on) {
-		router.on('routeDidChange', routeDidChange);
+	// istanbul ignore if: compatibility with ember < 3.6
+	if (!router || !router.on) {
+		router = appInstance.lookup('router:main');
+
+		router.on('willTransition', willTransition);
+		router.on('didTransition', didTransition);
 		return;
 	}
 
-	router = appInstance.lookup('router:main');
-
-	// Compatibility with Ember < 3.6.
-	router.on('willTransition', willTransition);
-	router.on('didTransition', didTransition);
+	router.on('routeDidChange', routeDidChange);
 }
 
